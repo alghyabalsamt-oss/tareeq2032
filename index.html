@@ -1,0 +1,77 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><title>طريق 2032</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:#000;color:#eee;font:17px/1.6 system-ui,"Segoe UI",Tahoma,sans-serif;padding:env(safe-area-inset-top) 0 calc(76px + env(safe-area-inset-bottom))}
+main{max-width:520px;margin:auto;padding:14px}.card{background:#111;border:1px solid #222;border-radius:16px;padding:16px;margin-bottom:12px}
+h2{margin:0 0 8px;font-size:18px;color:#d4af37}.big{font-size:44px;font-weight:700;color:#fff;line-height:1.1}.mut{color:#888;font-size:14px}
+.bar{height:12px;background:#222;border-radius:9px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:#d4af37}
+button,.btn{min-height:48px;border:0;border-radius:12px;background:#222;color:#eee;font:inherit;padding:8px 14px;cursor:pointer}button.p{background:#d4af37;color:#000;font-weight:700;width:100%}button.d{color:#f66}button.s{min-height:40px;padding:4px 10px}
+input,select,textarea{width:100%;background:#000;color:#eee;border:1px solid #333;border-radius:10px;padding:10px;font:inherit;margin:4px 0 8px}textarea{min-height:90px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.t{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1c1c1c}.t input{width:26px;height:26px;margin:0;flex:none}.t span{flex:1}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0a0a0a;border-top:1px solid #222;padding-bottom:env(safe-area-inset-bottom)}nav button{flex:1;border-radius:0;background:none;min-height:60px;font-size:14px}nav button.a{color:#d4af37}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g div{background:#0a0a0a;border-radius:12px;padding:10px;text-align:center}.g b{display:block;font-size:24px;color:#fff}
+.tag{font-size:12px;padding:2px 8px;border-radius:9px;background:#222}.full{color:#6c6}.part{color:#d4af37}.none{color:#888}.zero{color:#7ab}
+dialog{background:#111;color:#eee;border:1px solid #333;border-radius:16px;width:92%;max-width:480px}dialog::backdrop{background:#000a}.dy label{display:inline-block;margin:2px 6px}.dy input{width:auto;margin:0 4px}
+</style></head><body><main id="m"></main>
+<nav><button data-t="home">الرئيسية</button><button data-t="tasks">المهام</button><button data-t="log">السجل</button><button data-t="set">الإعدادات</button></nav>
+<dialog id="dlg"></dialog>
+<script>
+const K='tareeq2032',MSG=["أحسنت، خطوة صغيرة اليوم أفضل من انتظار يوم مثالي.","العثرة لا تلغي الطريق، المهم أنك عدت.","خذ راحتك، ثم واصل سعيك.","ليس مطلوبًا منك أن تنجز كل شيء كل يوم.","الحمد لله على التوفيق، استمر بثبات ورفق.","ثبات هادئ خير من اندفاع ينقطع.","كل يوم تسجله لبنة في الطريق.","رفقًا بنفسك؛ الطريق طويل وأنت تمضي فيه.","ما تعلمته اليوم يبقى معك، فاشكر نفسك عليه.","بارك الله في سعيك، وأعانك على ما بعده."];
+const DEF={start:'2026-11-19',target:'2032-04-02',tz:'Asia/Riyadh',cats:[],tasks:[],logs:{},rem:{on:false,time:'20:00',morning:false,mtime:'07:00'},lastMsg:-1,seq:1};
+let S=load(),tab='home',fired={};
+function load(){try{const s=JSON.parse(localStorage.getItem(K));if(s)return Object.assign(structuredClone(DEF),s)}catch(e){}return structuredClone(DEF)}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){alert('تعذر الحفظ')}}
+const $=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function P(){const o={};new Intl.DateTimeFormat('en-CA',{timeZone:S.tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(p=>o[p.type]=p.value);o.key=`${o.year}-${o.month}-${o.day}`;return o}
+const N=k=>{const[a,b,c]=k.split('-').map(Number);return Date.UTC(a,b-1,c)/864e5},fromN=n=>new Date(n*864e5).toISOString().slice(0,10),DOW=k=>new Date(N(k)*864e5).getUTCDay();
+const DN=k=>new Date(k+'T12:00:00Z').toLocaleDateString('ar-u-nu-latn',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+function ymd(a,b){let[y1,m1,d1]=a.split('-').map(Number),[y2,m2,d2]=b.split('-').map(Number),y=y2-y1,m=m2-m1,d=d2-d1;if(d<0){m--;d+=new Date(Date.UTC(y2,m2-1,0)).getUTCDate()}if(m<0){y--;m+=12}return[y,m,d]}
+function tasksFor(k){return S.tasks.filter(t=>!t.paused&&(t.once?t.once===k:(t.days||[0,1,2,3,4,5,6]).includes(DOW(k))))}
+function status(k,t){const l=S.logs[k];if(l&&l.saved){const d=l.done.length,n=l.total;return d===0?['none2','سُجّل دون مهام مكتملة','zero']:d>=n?['full','مكتمل','full']:['part','جزئي','part']}return k<t?['no','دون تسجيل','none']:['',k===t?'اليوم':'قادم','none']}
+function render(){const o=P(),t=o.key,m=$('#m');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('a',b.dataset.t===tab));m[`v_${tab}`]=0;m.innerHTML={home,tasks,log,set}[tab](o,t)}
+function home(o,t){const tot=N(S.target)-N(S.start),el=N(t)-N(S.start),pct=Math.max(0,Math.min(100,el/tot*100)),rem=Math.max(0,N(S.target)-N(t)),[y,mo,d]=ymd(t<S.target?t:S.target,S.target);
+const L=Object.entries(S.logs).filter(([k,l])=>l.saved),full=L.filter(([k,l])=>l.done.length>=l.total&&l.total>0).length,zero=L.filter(([k,l])=>l.done.length===0).length,part=L.length-full-zero;
+let un=0;for(let n=N(S.start);n<N(t);n++){const l=S.logs[fromN(n)];if(!(l&&l.saved))un++}
+const l=S.logs[t]||{done:[],note:''},ts=tasksFor(t);
+return`<div class="card"><div class="mut">${DN(t)} — ${o.hour}:${o.minute}:${o.second}</div><div class="big">${rem}</div><div>يومًا متبقيًا حتى ${DN(S.target)}</div><div class="mut">${y} سنة، ${mo} شهر، ${d} يوم</div>
+<div class="bar"><i style="width:${pct}%"></i></div><div class="mut">انقضى ${pct.toFixed(2)}٪ من المدة (نسبة الوقت فقط، وليست نسبة الإنجاز)</div></div>
+<div class="card"><h2>مهام اليوم</h2>${ts.map(x=>`<label class="t"><input type="checkbox" ${l.done.includes(x.id)?'checked':''} onchange="tog(${x.id})"><span>${E(x.name)}<br><small class="mut">${E(x.cat||'')} ${x.time||''}</small></span></label>`).join('')||'<div class="mut">لا مهام لهذا اليوم. يمكنك إضافة مهام من تبويب المهام.</div>'}
+<h2 style="margin-top:12px">ماذا أنجزت اليوم؟</h2><textarea id="note" oninput="note(this.value)" placeholder="اكتب بحرية ما تعلمته أو فعلته…">${E(l.note)}</textarea>
+<button class="p" onclick="reg()">${l.saved?'تحديث سجل اليوم':'تسجيل يوم السعي'}</button>${l.saved&&!l.done.length?'<div class="mut">هذا اليوم مسجّل دون مهام مكتملة.</div>':''}<div class="mut" id="msg"></div></div>
+<div class="card"><h2>إحصائياتي</h2><div class="g"><div><b>${L.length}</b>أيام مسجلة</div><div><b>${full}</b>كاملة</div><div><b>${part}</b>جزئية</div><div><b>${un}</b>دون تسجيل</div></div></div>`}
+function dl(k){return S.logs[k]||(S.logs[k]={done:[],note:'',saved:false,total:0})}
+function tog(id){const l=dl(P().key);l.done=l.done.includes(id)?l.done.filter(x=>x!==id):[...l.done,id];save()}
+function note(v){dl(P().key).note=v;save()}
+function reg(){const k=P().key,l=dl(k),ts=tasksFor(k);l.done=l.done.filter(i=>ts.some(x=>x.id===i));l.total=ts.length;if(!l.done.length&&!confirm('لم تكمل أي مهمة. هل تريد تسجيل اليوم دون مهام مكتملة؟'))return;l.saved=true;l.note=$('#note').value;let i;do{i=Math.floor(Math.random()*MSG.length)}while(i===S.lastMsg);S.lastMsg=i;save();render();$('#msg').textContent=MSG[i]}
+function stat(){let d=0,n=0;Object.values(S.logs).forEach(l=>{if(l.saved){d+=l.done.length;n+=l.total}});return[d,n]}
+function tasks(){const d=S.tasks.map((x,i)=>`<div class="t"><span>${E(x.name)}${x.paused?' ⏸':''}<br><small class="mut">${x.once?'مرة: '+x.once:x.days&&x.days.length<7?'أيام: '+x.days.map(a=>'الأحد,الاثنين,الثلاثاء,الأربعاء,الخميس,الجمعة,السبت'.split(',')[a]).join('،'):'يوميًا'} ${E(x.cat||'')} ${x.time||''}</small></span><button class="s" onclick="mv(${i},-1)">▲</button><button class="s" onclick="mv(${i},1)">▼</button><button class="s" onclick="edt(${x.id})">✎</button></div>`).join('');
+return`<div class="card"><h2>المهام</h2>${d||'<div class="mut">لا توجد مهام بعد.</div>'}<button class="p" style="margin-top:10px" onclick="edt()">+ مهمة جديدة</button></div><div class="card"><h2>التصنيفات</h2>${S.cats.map((c,i)=>`<div class="t"><span>${E(c)}</span><button class="s d" onclick="dc(${i})">حذف</button></div>`).join('')}<div class="row"><input id="nc" placeholder="تصنيف جديد"><button onclick="ac()">إضافة</button></div></div>`}
+function ac(){const v=$('#nc').value.trim();if(v&&!S.cats.includes(v)){S.cats.push(v);save();render()}}
+function dc(i){if(confirm('حذف التصنيف؟')){S.cats.splice(i,1);save();render()}}
+function mv(i,d){const j=i+d;if(j<0||j>=S.tasks.length)return;[S.tasks[i],S.tasks[j]]=[S.tasks[j],S.tasks[i]];save();render()}
+function edt(id){const x=S.tasks.find(t=>t.id===id)||{name:'',desc:'',cat:'',days:null,once:'',time:'',paused:false},dys=x.days||[0,1,2,3,4,5,6],nm='الأحد,الاثنين,الثلاثاء,الأربعاء,الخميس,الجمعة,السبت'.split(',');
+$('#dlg').innerHTML=`<h2>${id?'تعديل':'إضافة'} مهمة</h2><input id="a" placeholder="اسم المهمة" value="${E(x.name)}"><input id="b" placeholder="وصف (اختياري)" value="${E(x.desc)}"><select id="c"><option value="">بلا تصنيف</option>${S.cats.map(c=>`<option ${c===x.cat?'selected':''}>${E(c)}</option>`).join('')}</select>
+<div class="mut">لمرة واحدة في تاريخ (اتركه فارغًا للمتكررة):</div><input id="d" type="date" value="${x.once||''}"><div class="dy">${nm.map((n,i)=>`<label><input type="checkbox" class="dd" value="${i}" ${dys.includes(i)?'checked':''}>${n}</label>`).join('')}</div>
+<div class="mut">وقت التذكير (اختياري):</div><input id="e" type="time" value="${x.time||''}"><label><input type="checkbox" id="f" style="width:auto" ${x.paused?'checked':''}> إيقاف مؤقت</label>
+<div class="row"><button class="p" onclick="sv(${id||0})">حفظ</button><button onclick="dlg.close()">إلغاء</button>${id?`<button class="d" onclick="rm(${id})">حذف</button>`:''}</div>`;$('#dlg').showModal()}
+function sv(id){const nm=$('#a').value.trim();if(!nm)return alert('اكتب اسم المهمة');const ds=[...document.querySelectorAll('.dd:checked')].map(i=>+i.value),o={name:nm,desc:$('#b').value,cat:$('#c').value,once:$('#d').value||null,days:ds.length===7?null:ds,time:$('#e').value,paused:$('#f').checked};
+if(id)Object.assign(S.tasks.find(t=>t.id===id),o);else S.tasks.push({id:S.seq++,...o});save();dlg.close();render()}
+function rm(id){if(confirm('حذف المهمة؟')){S.tasks=S.tasks.filter(t=>t.id!==id);save();dlg.close();render()}}
+function log(o,t){const rows=[];for(let n=N(t);n>=N(S.start);n--){const k=fromN(n),[c,s,cl]=status(k,t),l=S.logs[k];rows.push(`<div class="t" onclick="opn('${k}')"><span>${DN(k)}<br><small class="mut">${l&&l.saved?l.done.length+' مكتملة، '+(l.total-l.done.length)+' غير مكتملة':''}</small></span><span class="tag ${cl}" style="flex:none">${s}</span></div>`)}
+const[d,n]=stat();return`<div class="card"><h2>نسبة الالتزام بالمهام</h2><div class="big">${n?Math.round(d/n*100):0}٪</div><div class="mut">الطريقة: المهام المكتملة (${d}) ÷ المهام المجدولة في الأيام المسجلة فقط (${n}). الأيام غير المسجلة لا تدخل في الحساب، وهي منفصلة تمامًا عن نسبة مرور الوقت.</div></div><div class="card"><h2>سجل الأيام</h2>${rows.join('')}</div>`}
+function opn(k){const l=S.logs[k],ts=l&&l.saved?S.tasks.filter(x=>l.done.includes(x.id)).map(x=>'✓ '+E(x.name)):[];$('#dlg').innerHTML=`<h2>${DN(k)}</h2><div>${status(k,P().key)[1]}</div>${l&&l.saved?`<p>${l.done.length} مكتملة من ${l.total}</p>${ts.join('<br>')}<p>${E(l.note)||'<span class=mut>لا ملاحظات</span>'}</p>`:'<p class="mut">لا يوجد سجل لهذا اليوم.</p>'}<button class="p" onclick="dlg.close()">إغلاق</button>`;$('#dlg').showModal()}
+function set(){const r=S.rem,zs=['Asia/Riyadh','Asia/Aden','Asia/Dubai','Africa/Cairo','Europe/Istanbul','UTC'];
+return`<div class="card"><h2>التذكيرات</h2><label><input type="checkbox" style="width:auto" ${r.on?'checked':''} onchange="rem('on',this.checked)"> تفعيل التذكيرات</label><div class="mut">وقت التذكير اليومي:</div><input type="time" value="${r.time}" onchange="rem('time',this.value)"><label><input type="checkbox" style="width:auto" ${r.morning?'checked':''} onchange="rem('morning',this.checked)"> رسالة صباحية</label><input type="time" value="${r.mtime}" onchange="rem('mtime',this.value)"><div class="mut">تعمل التذكيرات حاليًا أثناء فتح التطبيق فقط (انظر الملاحظات في التسليم).</div></div>
+<div class="card"><h2>التواريخ والمنطقة الزمنية</h2><div class="mut">تاريخ البداية</div><input type="date" value="${S.start}" onchange="cfg('start',this.value)"><div class="mut">الموعد المستهدف</div><input type="date" value="${S.target}" onchange="cfg('target',this.value)"><div class="mut">المنطقة الزمنية</div><select onchange="cfg('tz',this.value)">${zs.map(z=>`<option ${z===S.tz?'selected':''}>${z}</option>`).join('')}</select></div>
+<div class="card"><h2>البيانات</h2><div class="mut">تُحفظ بياناتك في هذا المتصفح فقط على جهازك، ولا تُرسل لأي جهة. حذف بيانات المتصفح قد يحذفها، فصدّر نسخة احتياطية بانتظام.</div><div class="row"><button onclick="ex()">تصدير</button><button onclick="im.click()">استيراد</button></div><input type="file" id="im" accept=".json" hidden onchange="imp(this.files[0])">
+<button style="margin-top:8px;width:100%" class="d" onclick="rs()">إعادة ضبط العدّاد</button></div>`}
+function rem(k,v){S.rem[k]=v;save();if(k==='on'&&v&&'Notification'in window)Notification.requestPermission()}
+function cfg(k,v){if(!v)return;const a={...S,[k]:v};if(N(a.target)<=N(a.start))return alert('الموعد يجب أن يكون بعد البداية');S[k]=v;save();render()}
+function ex(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='tareeq2032-'+P().key+'.json';a.click()}
+function imp(f){if(!f)return;f.text().then(x=>{try{const d=JSON.parse(x);if(!d.tasks||!d.logs)throw 0;if(!confirm('سيتم استبدال بياناتك الحالية بالنسخة المستوردة. متابعة؟'))return;S=Object.assign(structuredClone(DEF),d);save();render()}catch(e){alert('ملف غير صالح')}})}
+function rs(){if(!confirm('إعادة ضبط العدّاد لتبدأ من اليوم؟'))return;S.start=P().key;if(confirm('هل تريد أيضًا حذف سجل الإنجازات؟ (إلغاء = الإبقاء عليه)'))S.logs={};save();render()}
+function ntf(b){if('Notification'in window&&Notification.permission==='granted'){const o={body:b,icon:'icon-192.png',tag:b};navigator.serviceWorker?.ready.then(r=>r.showNotification('طريق 2032',o)).catch(()=>new Notification('طريق 2032',o))}}
+setInterval(()=>{const o=P(),hm=o.hour+':'+o.minute,f=(k,b)=>{if(fired[o.key+k])return;fired[o.key+k]=1;ntf(b)};if(S.rem.on){if(hm===S.rem.time)f('d','حان وقت مراجعة مهام اليوم وتسجيل سعيك.');if(S.rem.morning&&hm===S.rem.mtime)f('m',MSG[Math.floor(Math.random()*MSG.length)]);tasksFor(o.key).forEach(x=>{if(x.time===hm)f('t'+x.id,'تذكير: '+x.name)})}
+if(tab==='home'&&!document.activeElement.matches('textarea,input'))render()},1000);
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+render();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
